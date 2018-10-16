@@ -1,15 +1,13 @@
 <template>
 <v-container>
-    <v-layout row>
-        <v-flex xs12 sm6 offset-sm3>
+    <v-layout row wrap >
+        <v-flex sm6 offset-sm5 >
             <h2>Create a new Meetup</h2>
         </v-flex>
-    </v-layout>
-    <v-layout row>
-        <v-flex xs12 sm6 offset-sm3>
+        <v-flex>
             <form @submit.prevent="onCreateMeetup" action="">
                 <v-layout row>
-                  <v-flex>
+                  <v-flex xs12 sm6 offset-sm3>
                     <v-text-field name="title" 
                     label="Title" 
                     id="title" 
@@ -19,7 +17,7 @@
                   </v-flex>
                 </v-layout>
                 <v-layout row>
-                  <v-flex>
+                  <v-flex xs12 sm6 offset-sm3>
                     <v-text-field 
                     name="location" 
                     label="Location" 
@@ -30,30 +28,30 @@
                   </v-flex>
                 </v-layout>
                 <v-layout row>
-                  <v-flex>
-                    <v-text-field 
-                    name="imageUrl" 
-                    label="Image URL" 
-                    id="image-url" 
-                    v-model="imageUrl" 
-                    :rules="[rules.required]"
-                    ></v-text-field>
+                  <v-flex xs12 sm6 offset-sm3>
+                    <v-btn raised class="primary" @click="onPickFile">Upload Image</v-btn>
+                    <input 
+                    type="file"
+                    style="display: none"
+                    ref="fileInput"
+                    accept="image/*"
+                    @change="onFilePicked">
                   </v-flex>
                 </v-layout>
                 <v-layout row>
-                  <v-flex xs12 sm6>
+                  <v-flex xs12 sm6 offset-sm3>
                     <img :src="imageUrl" height="300" alt="">
                   </v-flex>
                 </v-layout>
                 <v-layout row>
-                  <v-flex>
-                    <v-textarea 
+                  <v-flex xs12 sm6 offset-sm3>
+                    <v-text-field 
                       name="description" 
                       label="Description" 
                       id="description" 
                       v-model="description" 
                       multi-line 
-                      ></v-textarea>
+                      ></v-text-field>
                   </v-flex>
                 </v-layout>
                 <v-layout row>
@@ -96,6 +94,7 @@ export default {
       description: '',
       date: null,
       time: null,
+      image: null,
       rules: {
         required: value => !!value || 'Required.',
         counter: value => value.length <= 20 || 'Max 20 characters',
@@ -136,16 +135,35 @@ export default {
       if (!this.formIsValid) {
         return
       }
+      if (!this.image) {
+        return
+      }
       const meetupData = {
         title: this.title,
         location: this.location,
-        imageUrl: this.imageUrl,
+        image: this.image,
         description: this.description,
         date: this.submittableDateTime
         // time: this.time
       }
       this.$store.dispatch('createMeetup', meetupData)
       this.$router.push('/meetups')
+    },
+    onPickFile () {
+      this.$refs.fileInput.click()
+    },
+    onFilePicked (event) {
+      const files = event.target.files
+      let filename = files[0].name
+      if (filename.lastIndexOf('.') <= 0) {
+        return alert('Please add a valid file!')
+      }
+      const fileReader = new FileReader()
+      fileReader.addEventListener('load', () => {
+        this.imageUrl = fileReader.result
+      })
+      fileReader.readAsDataURL(files[0])
+      this.image = files[0]
     }
   }
 }
